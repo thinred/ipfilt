@@ -16,7 +16,7 @@ def replace_ips(text, geoip):
         # a, b, c, d = m.groups()
         info = geoip.record_by_addr(ip)
         if info is None:
-            return "{}{}{} {?}".format(GREEN, ip, RESET)
+            return "{}{} {{?}}{}".format(GREEN, ip, RESET)
         else:
             city = info['city']
             if city is None:
