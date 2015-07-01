@@ -5,6 +5,11 @@ highlighted IPv4's + geoinformation about each address. For example:
 
     cat /var/log/nginx/access.log | ipfilt
 
+You can also "geolocate" a single address like that:
+
+    $ echo 8.8.8.8 | ipfilt
+    8.8.8.8 {Mountain View, US}
+
 You will need GeoIP database from MaxMind and associated
 library. If you are using Debian, it is as simple as:
 
