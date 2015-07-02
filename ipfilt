@@ -29,6 +29,9 @@ def replace_ips(text, geoip):
 
 if __name__ == '__main__':
     gi = GeoIP.open("/usr/share/GeoIP/GeoIPCity.dat", GeoIP.GEOIP_STANDARD)
-    for line in sys.stdin:
-        line = replace_ips(line, gi)
-        sys.stdout.write(line)
+    try:
+        for line in sys.stdin:
+            line = replace_ips(line, gi)
+            sys.stdout.write(line)
+    except KeyboardInterrupt:
+        sys.exit(1)
