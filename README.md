@@ -1,5 +1,5 @@
 # ipfilt
-A small UNIX utility to highlight IPs and show basicgeolocation info.
+A small UNIX utility to highlight IPs and show basic geolocation info.
 You can pipe some logs to it, and you'll get colorized output with
 highlighted IPv4's + geoinformation about each address. For example:
 
@@ -9,6 +9,11 @@ You can also "geolocate" a single address like that:
 
     $ echo 8.8.8.8 | ipfilt
     8.8.8.8 {Mountain View, US}
+
+It works with domains too:
+
+    $ echo github.com | ipfilt
+    github.com {San Francisco, US}
 
 You will need GeoIP database from MaxMind and associated
 library. If you are using Debian, it is as simple as:
