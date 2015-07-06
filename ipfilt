@@ -3,35 +3,58 @@
 import sys
 import GeoIP
 import re
+from tlds import TLDS
+
+def build_domain_regexp():
+    tlds = [ re.escape(t) for t in TLDS ]
+    tlds = '(' + '|'.join(tlds) + ')'
+    s = r'\b([-A-Z0-9]+\.)+' + tlds + r'\b'
+    return re.compile(s, re.IGNORECASE)
 
 IPEXP = re.compile(r'\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b')
+DOMEXP = build_domain_regexp()
 GREEN = '\x1b[42m'
 RESET = '\x1b[0m'
-COLORS = True
+
+def colored(text, color):
+    return "{}{}{}".format(color, text, RESET)
+
+def format_info(addr, info):
+    if info is None:
+        return colored("{} {{?}}".format(addr), GREEN)
+    else:
+        city = info['city']
+        if city is None:
+            city = "?"
+        country = info['country_code']
+        return colored("{} {{{}, {}}}".format(addr, city, country), GREEN)
 
 def replace_ips(text, geoip):
 
     def ip_match(m):
         ip = m.group(0)
-        # a, b, c, d = m.groups()
         info = geoip.record_by_addr(ip)
-        if info is None:
-            return "{}{} {{?}}{}".format(GREEN, ip, RESET)
-        else:
-            city = info['city']
-            if city is None:
-                city = "?"
-            return "{}{} {{{}, {}}}{}".format(
-                GREEN, ip, city, info['country_code'],
-                RESET)
-    x = IPEXP.sub(ip_match, text)
-    return x
+        return format_info(ip, info)
+    return IPEXP.sub(ip_match, text)
+
+def replace_domains(text, geoip):
+
+    def domain_match(m):
+        addr = m.group(0)
+        info = geoip.record_by_name(addr)
+        return format_info(addr, info)
+    return DOMEXP.sub(domain_match, text)
+
+def replace_all(text, geoip):
+    text = replace_domains(text, geoip)
+    text = replace_ips(text, geoip)
+    return text
 
 if __name__ == '__main__':
     gi = GeoIP.open("/usr/share/GeoIP/GeoIPCity.dat", GeoIP.GEOIP_STANDARD)
     try:
         for line in sys.stdin:
-            line = replace_ips(line, gi)
+            line = replace_all(line, gi)
             sys.stdout.write(line)
     except KeyboardInterrupt:
         sys.exit(1)
